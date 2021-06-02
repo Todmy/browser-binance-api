@@ -54,6 +54,6 @@ after_success:
     
 env:
   global:
-    - GH_REPO_NAME: node-binance-api
-    - GH_REPO_REF: github.com/jaggedsoft/node-binance-api.git
-    - JSDOC_FILES: $TRAVIS_BUILD_DIR/node-binance-api.js
+    - GH_REPO_NAME: browser-binance-api
+    - GH_REPO_REF: github.com/finom/browser-binance-api.git
+    - JSDOC_FILES: $TRAVIS_BUILD_DIR/browser-binance-api.js

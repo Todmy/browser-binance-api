@@ -1,4 +1,4 @@
-![Downloads](https://img.shields.io/npm/dt/node-binance-api.svg?style=for-the-badge&maxAge=86400) ![Stars](https://img.shields.io/github/stars/jaggedsoft/node-binance-api.svg?style=for-the-badge&label=Stars) ![Contributors](https://img.shields.io/github/contributors/jaggedsoft/node-binance-api.svg?style=for-the-badge&maxAge=86400) ![Issues](https://img.shields.io/github/issues/jaggedsoft/node-binance-api.svg?style=for-the-badge&maxAge=86400) <!-- ![Issue Closure](https://img.shields.io/issuestats/i/github/jaggedsoft/node-binance-api.svg?style=for-the-badge&maxAge=86400) -->
+![Downloads](https://img.shields.io/npm/dt/browser-binance-api.svg?style=for-the-badge&maxAge=86400) ![Stars](https://img.shields.io/github/stars/finom/browser-binance-api.svg?style=for-the-badge&label=Stars) ![Contributors](https://img.shields.io/github/contributors/finom/browser-binance-api.svg?style=for-the-badge&maxAge=86400) ![Issues](https://img.shields.io/github/issues/finom/browser-binance-api.svg?style=for-the-badge&maxAge=86400) <!-- ![Issue Closure](https://img.shields.io/issuestats/i/github/finom/browser-binance-api.svg?style=for-the-badge&maxAge=86400) -->
 ## Advanced Examples
 
 #### exchangeInfo(): Pull minimum order size, quantity, etc.
@@ -102,7 +102,7 @@ binance.prevDay(false, (error, prevDay) => {
 
 #### Enable Test Mode for orders
 ```js
-const binance = require('node-binance-api');
+const binance = require('browser-binance-api');
 binance.options({
   'APIKEY':'<key>',
   'APISECRET':'<secret>',

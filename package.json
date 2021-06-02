@@ -1,22 +1,19 @@
 {
-  "name": "node-binance-api",
-  "version": "0.12.5",
-  "description": "Binance API for node https://github.com/jaggedsoft/node-binance-api",
-  "main": "node-binance-api.js",
+  "name": "browser-binance-api",
+  "version": "0.0.0",
+  "description": "Binance API for node https://github.com/finom/browser-binance-api",
+  "main": "browser-binance-api.js",
   "dependencies": {
     "async": "^3.1.0",
-    "https-proxy-agent": "^3.0.1",
-    "request": "^2.88.0",
-    "socks-proxy-agent": "^4.0.2",
-    "string-hash": "^1.1.3",
     "json-bigint": "^1.0.0",
-    "url": "^0.11.0",
-    "ws": "^7.2.0"
+    "browser-request": "^0.3.3",
+    "string-hash": "^1.1.3",
+    "url": "^0.11.0"
   },
   "scripts": {
     "test": "mocha",
     "test-debug": "mocha --inspect-brk",
-    "lint": "eslint -c .eslintrc.js node-binance-api.js test.js",
+    "lint": "eslint -c .eslintrc.js browser-binance-api.js test.js",
     "cover": "istanbul cover _mocha --report lcovonly",
     "coveralls": "cat ./coverage/lcov.info | coveralls",
     "codacy": "cat ./coverage/lcov.info | codacy-coverage -v",
@@ -24,7 +21,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/jaggedsoft/node-binance-api.git"
+    "url": "git://github.com/finom/browser-binance-api.git"
   },
   "keywords": [
     "binance",
@@ -33,9 +30,9 @@
   "author": "Jon Eyrick <mm@liquidity.ltd> (https://liquidity.ltd)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/jaggedsoft/node-binance-api/issues"
+    "url": "https://github.com/finom/browser-binance-api/issues"
   },
-  "homepage": "https://github.com/jaggedsoft/node-binance-api#readme",
+  "homepage": "https://github.com/finom/browser-binance-api#readme",
   "devDependencies": {
     "chai": "^4.2.0",
     "chai-counter": "^1.0.0",

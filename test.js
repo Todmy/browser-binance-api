@@ -1,6 +1,6 @@
 /* ============================================================
- * node-binance-api
- * https://github.com/jaggedsoft/node-binance-api
+ * browser-binance-api
+ * https://github.com/finom/browser-binance-api
  * ============================================================
  * Copyright 2017-, Jon Eyrick
  * Released under the MIT License
@@ -20,7 +20,7 @@ const TIMEOUT = 10000;
 let chai = require('chai');
 let assert = chai.assert;
 let path = require('path');
-let Binance = require(path.resolve(__dirname, 'node-binance-api.js'));
+let Binance = require(path.resolve(__dirname, 'browser-binance-api.js'));
 let binance = new Binance();
 let util = require('util');
 

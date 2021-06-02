@@ -1,23 +1,18 @@
 /* ============================================================
- * node-binance-api
- * https://github.com/jaggedsoft/node-binance-api
+ * browser-binance-api
+ * https://github.com/finom/browser-binance-api
  * ============================================================
  * Copyright 2017-, Jon Eyrick
  * Released under the MIT License
  * ============================================================
- * @module jaggedsoft/node-binance-api
+ * @module finom/browser-binance-api
  * @return {object} instance to class object */
 let api = function Binance( options = {} ) {
     if ( !new.target ) return new api( options ); // Legacy support for calling the constructor without 'new'
     let Binance = this; // eslint-disable-line consistent-this
-    const WebSocket = require( 'ws' );
-    const request = require( 'request' );
+    const request = require( 'browser-request' );
     const crypto = require( 'crypto' );
-    const file = require( 'fs' );
-    const url = require( 'url' );
     const JSONbig = require( 'json-bigint' );
-    const HttpsProxyAgent = require( 'https-proxy-agent' );
-    const SocksProxyAgent = require( 'socks-proxy-agent' );
     const stringHash = require( 'string-hash' );
     const async = require( 'async' );
     let base = 'https://api.binance.com/api/';
@@ -58,6 +53,19 @@ let api = function Binance( options = {} ) {
     Binance.klineQueue = {};
     Binance.ohlc = {};
 
+    function WebSocket( url ) {
+        const ws = new window.WebSocket( url );
+        ws.on = ( eventName, handler ) => {
+            if( eventName === 'open' || eventName === 'close' || eventName === 'error' ) {
+                ws.addEventListener( 'open', handler )
+            } else if( eventName === 'message' ) {
+                ws.addEventListener( 'message', ( { data } ) => handler( JSON.parse( data ) ) );
+            }
+        }
+
+        return ws;
+    }
+
     const default_options = {
         recvWindow: 5000,
         useServerTime: false,
@@ -89,9 +97,7 @@ let api = function Binance( options = {} ) {
     if ( options ) setOptions( options );
 
     function setOptions( opt = {}, callback = false ) {
-        if ( typeof opt === 'string' ) { // Pass json config filename
-            Binance.options = JSON.parse( file.readFileSync( opt ) );
-        } else Binance.options = opt;
+        Binance.options = opt;
         if ( typeof Binance.options.recvWindow === 'undefined' ) Binance.options.recvWindow = default_options.recvWindow;
         if ( typeof Binance.options.useServerTime === 'undefined' ) Binance.options.useServerTime = default_options.useServerTime;
         if ( typeof Binance.options.reconnect === 'undefined' ) Binance.options.reconnect = default_options.reconnect;
@@ -674,27 +680,7 @@ let api = function Binance( options = {} ) {
      * @return {WebSocket} - websocket reference
      */
     const subscribe = function ( endpoint, callback, reconnect = false, opened_callback = false ) {
-        let httpsproxy = process.env.https_proxy || false;
-        let socksproxy = process.env.socks_proxy || false;
-        let ws = false;
-
-        if ( socksproxy !== false ) {
-            socksproxy = proxyReplacewithIp( socksproxy );
-            if ( Binance.options.verbose ) Binance.options.log( 'using socks proxy server ' + socksproxy );
-            let agent = new SocksProxyAgent( {
-                protocol: parseProxy( socksproxy )[0],
-                host: parseProxy( socksproxy )[1],
-                port: parseProxy( socksproxy )[2]
-            } );
-            ws = new WebSocket( stream + endpoint, { agent: agent } );
-        } else if ( httpsproxy !== false ) {
-            let config = url.parse( httpsproxy );
-            let agent = new HttpsProxyAgent( config );
-            if ( Binance.options.verbose ) Binance.options.log( 'using proxy server ' + agent );
-            ws = new WebSocket( stream + endpoint, { agent: agent } );
-        } else {
-            ws = new WebSocket( stream + endpoint );
-        }
+        let ws = new WebSocket( stream + endpoint );
 
         if ( Binance.options.verbose ) Binance.options.log( 'Subscribed to ' + endpoint );
         ws.reconnect = Binance.options.reconnect;
@@ -723,27 +709,8 @@ let api = function Binance( options = {} ) {
      * @return {WebSocket} - websocket reference
      */
     const subscribeCombined = function ( streams, callback, reconnect = false, opened_callback = false ) {
-        let httpsproxy = process.env.https_proxy || false;
-        let socksproxy = process.env.socks_proxy || false;
         const queryParams = streams.join( '/' );
-        let ws = false;
-        if ( socksproxy !== false ) {
-            socksproxy = proxyReplacewithIp( socksproxy );
-            if ( Binance.options.verbose ) Binance.options.log( 'using socks proxy server ' + socksproxy );
-            let agent = new SocksProxyAgent( {
-                protocol: parseProxy( socksproxy )[0],
-                host: parseProxy( socksproxy )[1],
-                port: parseProxy( socksproxy )[2]
-            } );
-            ws = new WebSocket( combineStream + queryParams, { agent: agent } );
-        } else if ( httpsproxy !== false ) {
-            if ( Binance.options.verbose ) Binance.options.log( 'using proxy server ' + httpsproxy );
-            let config = url.parse( httpsproxy );
-            let agent = new HttpsProxyAgent( config );
-            ws = new WebSocket( combineStream + queryParams, { agent: agent } );
-        } else {
-            ws = new WebSocket( combineStream + queryParams );
-        }
+        let ws = new WebSocket( combineStream + queryParams );
 
         ws.reconnect = Binance.options.reconnect;
         ws.endpoint = stringHash( queryParams );
@@ -870,27 +837,7 @@ let api = function Binance( options = {} ) {
         if ( !params.reconnect ) params.reconnect = false;
         if ( !params.openCallback ) params.openCallback = false;
         if ( !params.id ) params.id = false;
-        let httpsproxy = process.env.https_proxy || false;
-        let socksproxy = process.env.socks_proxy || false;
-        let ws = false;
-
-        if ( socksproxy !== false ) {
-            socksproxy = proxyReplacewithIp( socksproxy );
-            if ( Binance.options.verbose ) Binance.options.log( `futuresSubscribeSingle: using socks proxy server: ${ socksproxy }` );
-            let agent = new SocksProxyAgent( {
-                protocol: parseProxy( socksproxy )[0],
-                host: parseProxy( socksproxy )[1],
-                port: parseProxy( socksproxy )[2]
-            } );
-            ws = new WebSocket( ( Binance.options.test ? fstreamSingleTest : fstreamSingle ) + endpoint, { agent } );
-        } else if ( httpsproxy !== false ) {
-            if ( Binance.options.verbose ) Binance.options.log( `futuresSubscribeSingle: using proxy server: ${ agent }` );
-            let config = url.parse( httpsproxy );
-            let agent = new HttpsProxyAgent( config );
-            ws = new WebSocket( ( Binance.options.test ? fstreamSingleTest : fstreamSingle ) + endpoint, { agent } );
-        } else {
-            ws = new WebSocket( ( Binance.options.test ? fstreamSingleTest : fstreamSingle ) + endpoint );
-        }
+        let ws = new WebSocket( ( Binance.options.test ? fstreamSingleTest : fstreamSingle ) + endpoint );
 
         if ( Binance.options.verbose ) Binance.options.log( 'futuresSubscribeSingle: Subscribed to ' + endpoint );
         ws.reconnect = Binance.options.reconnect;
@@ -923,27 +870,8 @@ let api = function Binance( options = {} ) {
         if ( !params.reconnect ) params.reconnect = false;
         if ( !params.openCallback ) params.openCallback = false;
         if ( !params.id ) params.id = false;
-        let httpsproxy = process.env.https_proxy || false;
-        let socksproxy = process.env.socks_proxy || false;
         const queryParams = streams.join( '/' );
-        let ws = false;
-        if ( socksproxy !== false ) {
-            socksproxy = proxyReplacewithIp( socksproxy );
-            if ( Binance.options.verbose ) Binance.options.log( `futuresSubscribe: using socks proxy server ${ socksproxy }` );
-            let agent = new SocksProxyAgent( {
-                protocol: parseProxy( socksproxy )[0],
-                host: parseProxy( socksproxy )[1],
-                port: parseProxy( socksproxy )[2]
-            } );
-            ws = new WebSocket( ( Binance.options.test ? fstreamTest : fstream ) + queryParams, { agent } );
-        } else if ( httpsproxy !== false ) {
-            if ( Binance.options.verbose ) Binance.options.log( `futuresSubscribe: using proxy server ${ httpsproxy }` );
-            let config = url.parse( httpsproxy );
-            let agent = new HttpsProxyAgent( config );
-            ws = new WebSocket( ( Binance.options.test ? fstreamTest : fstream ) + queryParams, { agent } );
-        } else {
-            ws = new WebSocket( ( Binance.options.test ? fstreamTest : fstream ) + queryParams );
-        }
+        let ws = new WebSocket( ( Binance.options.test ? fstreamTest : fstream ) + queryParams );
 
         ws.reconnect = Binance.options.reconnect;
         ws.endpoint = stringHash( queryParams );
@@ -1573,26 +1501,7 @@ let api = function Binance( options = {} ) {
         if ( !params.reconnect ) params.reconnect = false;
         if ( !params.openCallback ) params.openCallback = false;
         if ( !params.id ) params.id = false;
-        let httpsproxy = process.env.https_proxy || false;
-        let socksproxy = process.env.socks_proxy || false;
-        let ws = false;
-        if ( socksproxy !== false ) {
-            socksproxy = proxyReplacewithIp( socksproxy );
-            if ( Binance.options.verbose ) Binance.options.log( `deliverySubscribeSingle: using socks proxy server: ${ socksproxy }` );
-            let agent = new SocksProxyAgent( {
-                protocol: parseProxy( socksproxy )[0],
-                host: parseProxy( socksproxy )[1],
-                port: parseProxy( socksproxy )[2]
-            } );
-            ws = new WebSocket( ( Binance.options.test ? dstreamSingleTest : dstreamSingle ) + endpoint, { agent } );
-        } else if ( httpsproxy !== false ) {
-            if ( Binance.options.verbose ) Binance.options.log( `deliverySubscribeSingle: using proxy server: ${ agent }` );
-            let config = url.parse( httpsproxy );
-            let agent = new HttpsProxyAgent( config );
-            ws = new WebSocket( ( Binance.options.test ? dstreamSingleTest : dstreamSingle ) + endpoint, { agent } );
-        } else {
-            ws = new WebSocket( ( Binance.options.test ? dstreamSingleTest : dstreamSingle ) + endpoint );
-        }
+        let ws = new WebSocket( ( Binance.options.test ? dstreamSingleTest : dstreamSingle ) + endpoint );
 
         if ( Binance.options.verbose ) Binance.options.log( 'deliverySubscribeSingle: Subscribed to ' + endpoint );
         ws.reconnect = Binance.options.reconnect;
@@ -1625,27 +1534,8 @@ let api = function Binance( options = {} ) {
         if ( !params.reconnect ) params.reconnect = false;
         if ( !params.openCallback ) params.openCallback = false;
         if ( !params.id ) params.id = false;
-        let httpsproxy = process.env.https_proxy || false;
-        let socksproxy = process.env.socks_proxy || false;
         const queryParams = streams.join( '/' );
-        let ws = false;
-        if ( socksproxy !== false ) {
-            socksproxy = proxyReplacewithIp( socksproxy );
-            if ( Binance.options.verbose ) Binance.options.log( `deliverySubscribe: using socks proxy server ${ socksproxy }` );
-            let agent = new SocksProxyAgent( {
-                protocol: parseProxy( socksproxy )[0],
-                host: parseProxy( socksproxy )[1],
-                port: parseProxy( socksproxy )[2]
-            } );
-            ws = new WebSocket( ( Binance.options.test ? dstreamTest : dstream ) + queryParams, { agent } );
-        } else if ( httpsproxy !== false ) {
-            if ( Binance.options.verbose ) Binance.options.log( `deliverySubscribe: using proxy server ${ httpsproxy }` );
-            let config = url.parse( httpsproxy );
-            let agent = new HttpsProxyAgent( config );
-            ws = new WebSocket( ( Binance.options.test ? dstreamTest : dstream ) + queryParams, { agent } );
-        } else {
-            ws = new WebSocket( ( Binance.options.test ? dstreamTest : dstream ) + queryParams );
-        }
+        let ws = new WebSocket( ( Binance.options.test ? dstreamTest : dstream ) + queryParams );
 
         ws.reconnect = Binance.options.reconnect;
         ws.endpoint = stringHash( queryParams );
