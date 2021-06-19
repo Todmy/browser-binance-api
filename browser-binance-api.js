@@ -32,7 +32,6 @@ let api = function Binance( options = {} ) {
     let dstreamTest = 'wss://dstream.binancefuture.com/stream?streams=';
     let stream = 'wss://stream.binance.com:9443/ws/';
     let combineStream = 'wss://stream.binance.com:9443/stream?streams=';
-    const userAgent = 'Mozilla/4.0 (compatible; Node Binance API)';
     const contentType = 'application/x-www-form-urlencoded';
     Binance.subscriptions = {};
     Binance.futuresSubscriptions = {};
@@ -208,7 +207,6 @@ let api = function Binance( options = {} ) {
         timeout: Binance.options.recvWindow,
         forever: Binance.options.keepAlive,
         headers: {
-            'User-Agent': userAgent,
             'Content-type': contentType,
             'X-MBX-APIKEY': key || ''
         }
@@ -225,7 +223,6 @@ let api = function Binance( options = {} ) {
             arrayFormat: 'repeat'
         },
         headers: {
-            'User-Agent': userAgent,
             'Content-type': contentType,
             'X-MBX-APIKEY': key || ''
         }
@@ -524,7 +521,6 @@ let api = function Binance( options = {} ) {
     const promiseRequest = async ( url, data = {}, flags = {} ) => {
         return new Promise( ( resolve, reject ) => {
             let query = '', headers = {
-                'User-Agent': userAgent,
                 'Content-type': 'application/x-www-form-urlencoded'
             };
             if ( typeof flags.method === 'undefined' ) flags.method = 'GET'; // GET POST PUT DELETE
